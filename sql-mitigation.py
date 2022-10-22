@@ -47,7 +47,7 @@ def testValid():
 
 
 def testTautology():
-    # Demonstrates a tautology attack. 
+    # Demonstrates a tautology attack.
     # Feeds the test cases through the query function and displays the output.
     username = "Bob"
     password = "Passowrd' OR '1' = '1"
@@ -57,16 +57,35 @@ def testTautology():
     passB = "fake123' OR 'mom' = 'mom"
     print(genQuery(userB,passB))
 
+    userC = "Billy"
+    passC = "'nothing' OR 'abc' = 'abc'"
+    print(genQuery(userC, passC))
+
 def testUnion():
-    pass
+    #Demonstrates a union attack
+    username = "George"
+    password = "'password' UNION SELECT authenticate FROM passwordList"
+    print(genQuery(username, password))
 
 def testAddState():
-    pass
+    #Demonstrates an additional statement attack
+    username = "Sam"
+    password = "'nothing'; INSERT INTO passwordList (name, passwd) VALUES 'Eve', '1111';"
+    print(genQuery(username, password))
 
 def testComment():
-    pass
-     
+    #Demonstrates a comment attack
+    username = "'Root'; --"
+    password = "nothing"
+    print(genQuery(username, password))
+
 print("TESTING VALID CASES")
 testValid()
 print("\nTESTING TAUTOLOGY")
 testTautology()
+print("\nTESTING UNION")
+testUnion()
+print("\nTESTING ADDITIONAL STATEMENT")
+testAddState()
+print("\nTESTING COMMENT")
+testComment()
