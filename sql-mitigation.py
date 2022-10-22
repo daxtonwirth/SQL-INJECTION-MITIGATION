@@ -18,8 +18,7 @@ def genQueryWeak(username, password):
     password.replace("'", "")
     password.replace("'","")
 
-    SQL = f"SELECT authenticate FROM passwordList WHERE name='{username}' and passwd='{password}'"
-    return SQL
+    return genQuery(username, password)
 
 def genQueryStrong(username, password):
     # provide a strong mitigation against all command injection attacks
@@ -54,70 +53,91 @@ def genQueryStrong(username, password):
     password = newPassword
     username = newUsername
 
-    SQL = f"SELECT authenticate FROM passwordList WHERE name='{username}' and passwd='{password}'"
-    return SQL
+    return genQuery(username, password)
 
 
-def testValid():
+
+def testValid(type):
     # demonstrate the query generation function works as expected with a collection of test cases
     # that represent valid input where the username and the password consist of letters, numbers, and underscores
     testcaseusernames = ["bob", "Sue", "greg", "myUsername_123"]
     testcasepasswords = ["Password1", "123456", "QUERTY_1", "great_Password456"]
-    for user in testcaseusernames:
-        for password in testcasepasswords:
-            print(genQuery(user, password))
+    
+    print("\nTESTING VALID CASES")
 
+    iterate = 0
 
-def testTautology():
+    for username in testcaseusernames:
+        testAll(type, username, testcasepasswords[iterate])
+        iterate +=1
+
+def testTautology(type):
     # Demonstrates a tautology attack.
     # Feeds the test cases through the query function and displays the output.
+    print("\nTESTING TAUTOLOGY")
+
     username = "Bob"
     password = "Passowrd' OR '1' = '1"
-    print("User1:")
-    print("No mitigation: " + genQuery(username,password))
-    print("Weak mitigation: " + genQueryWeak(username,password))
-    print("Strong mitigation: " + genQueryStrong(username,password))
+    testAll(type, username, password)
 
-    userB = "dad_"
-    passB = "fake123' OR 'mom' = 'mom"
-    print("\nUser 2:")
-    print(genQuery(userB,passB))
-    print("No mitigation: " + genQuery(userB,passB))
-    print("Weak mitigation: " + genQueryWeak(userB,passB))
-    print("Strong mitigation: " + genQueryStrong(userB,passB))
-    
-    userC = "Billy"
-    passC = "'nothing' OR 'abc' = 'abc'"
-    print("\nUser 3:")
-    print("No mitigation: " + genQuery(userC,passC))
-    print("Weak mitigation: " + genQueryWeak(userC,passC))
-    print("Strong mitigation: " + genQueryStrong(userC,passC))
 
-def testUnion():
+    username = "dad_"
+    password = "fake123' OR 'mom' = 'mom"
+    testAll(type, username, password)
+
+
+    username = "Billy"
+    password = "'nothing' OR 'abc' = 'abc'"
+    testAll(type, username, password)
+
+
+def testUnion(type):
     #Demonstrates a union attack
+    print("\nTESTING UNION")
+
     username = "George"
-    password = "password' UNION SELECT authenticate FROM passwordList"
-    print(genQuery(username, password))
+    password = "'password' UNION SELECT authenticate FROM passwordList"
 
-def testAddState():
+    testAll(type, username, password)
+
+
+def testAddState(type):
     #Demonstrates an additional statement attack
-    username = "Sam"
-    password = "nothing'; INSERT INTO passwordList (name, passwd) VALUES 'Eve', '1111';"
-    print(genQuery(username, password))
+    print("\nTESTING ADDITIONAL STATEMENT")
 
-def testComment():
+    username = "Sam"
+    password = "'nothing'; INSERT INTO passwordList (name, passwd) VALUES 'Eve', '1111';"
+    
+    testAll(type, username, password)
+
+
+def testComment(type):
     #Demonstrates a comment attack
+    print("\nTESTING COMMENT")
+
     username = "'Root'; --"
     password = "nothing"
-    print(genQuery(username, password))
+    
+    testAll(type, username, password)
 
-print("TESTING VALID CASES")
-testValid()
-print("\nTESTING TAUTOLOGY")
-testTautology()
-print("\nTESTING UNION")
-testUnion()
-print("\nTESTING ADDITIONAL STATEMENT")
-testAddState()
-print("\nTESTING COMMENT")
-testComment()
+
+def testAll(type, username, password):
+    if type == 0:
+        print(genQuery(username, password))
+    elif type == 1:
+        print(genQueryWeak(username, password))
+    else: 
+        print(genQueryStrong(username, password))
+
+
+    
+
+# Test each case
+for x in range(0,3):
+    testValid(x)
+    testTautology(x)
+    testUnion(x)
+    testAddState(x)
+    testComment(x)
+    print()
+
