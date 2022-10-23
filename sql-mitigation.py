@@ -1,11 +1,20 @@
+# Needed for regular expressions
 import re
 
-def genQuery(username, password):
-    # accepts two input parameters and returns a SQL string.
-    return f"SELECT authenticate FROM passwordList WHERE name='{username}' and passwd='{password}'"
+#######
+#Function Definitions
+#######
 
+
+## genQuery
+# Accepts two input parameters and returns a SQL string meant for user authentication
+def genQuery(username, password):
+    return f"SELECT authenticate FROM passwordList WHERE name='{username}' and passwd='{password}'"
+## End genQuery
+
+## genQueryWeak
+# Provides a weak mitigation against all four attacks
 def genQueryWeak(username, password):
-    # provide a weak mitigation against all four attacks
 
     # Comment mitigtion
     username.replace("-","")
@@ -18,10 +27,12 @@ def genQueryWeak(username, password):
     password.replace("'","")
 
     return genQuery(username, password)
+## End genQueryWeak
 
+## genQueryStrong
+# Provides a strong mitigation against all command injection attacks
+# Only allows letters, numbers, and the "_" characters
 def genQueryStrong(username, password):
-    # provide a strong mitigation against all command injection attacks
-    # Only allow letters, numbers, and the "_" characters
     regex = re.compile('\w|_')
     
     rUsername = re.findall(regex, username)
@@ -38,11 +49,12 @@ def genQueryStrong(username, password):
     username = newUsername
 
     return genQuery(username, password)
+## End genQueryStrong
 
-
+## testValid
+# Demonstrates that the query generation function works as expected with a collection of test cases
+# that represent valid input where the username and the password consist of letters, numbers, and underscores
 def testValid(type):
-    # demonstrate the query generation function works as expected with a collection of test cases
-    # that represent valid input where the username and the password consist of letters, numbers, and underscores
     testcaseusernames = ["bob", "Sue", "greg", "myUsername_123"]
     testcasepasswords = ["Password1", "123456", "QUERTY_1", "great_Password456"]
     
@@ -52,10 +64,12 @@ def testValid(type):
     for username in testcaseusernames:
         testAll(type, username, testcasepasswords[iterate])
         iterate +=1
+## End testValid
 
+## testTautology
+# Demonstrates a tautology attack by adding OR plus an always true statement into the code
+# Feeds the test cases through the selected query function/mitigation (type) and displays the output
 def testTautology(type):
-    # Demonstrates a tautology attack.
-    # Feeds the test cases through the query function and displays the output.
     print("\nTESTING TAUTOLOGY")
 
     username = "Bob"
@@ -69,38 +83,46 @@ def testTautology(type):
     username = "Billy"
     password = "'nothing' OR 'abc' = 'abc'"
     testAll(type, username, password)
+## End testTautology
 
-
+## testUnion
+# Demonstrates a union attack by adding UNION SELECT plus code designed to retrieve more information from the database
+# Feeds the test cases through the selected query function/mitigation (type) and displays the output
 def testUnion(type):
-    #Demonstrates a union attack
     print("\nTESTING UNION")
 
     username = "George"
     password = "'password' UNION SELECT authenticate FROM passwordList"
 
     testAll(type, username, password)
+## End testUnion
 
-
+## testAddState
+# Demonstrates an additional statement attack by adding a line ender ; plus code designed to modify the database
+# Feeds the test cases through the selected query function/mitigation (type) and displays the output
 def testAddState(type):
-    #Demonstrates an additional statement attack
     print("\nTESTING ADDITIONAL STATEMENT")
 
     username = "Sam"
     password = "'nothing'; INSERT INTO passwordList (name, passwd) VALUES 'Eve', '1111';"
     
     testAll(type, username, password)
+## End testAddState
 
-
+## testComment
+# Demonstrates a comment attack by adding a line ender ; plus the comment symbol -- which effectively removes any subsequent code from executing
+# Feeds the test cases through the selected query function/mitigation (type) and displays the output
 def testComment(type):
-    #Demonstrates a comment attack
     print("\nTESTING COMMENT")
 
     username = "'Root'; --"
     password = "nothing"
     
     testAll(type, username, password)
+## End testComment
 
-# Test the specific type of mitigation 
+## testAll
+# Test the specific type of mitigation where 0 is the Standard Query, 1 is the Weak Mitigation, and 2 is the Strong Mitigation
 def testAll(type, username, password):
     if type == 0:
         print(genQuery(username, password))
@@ -108,18 +130,25 @@ def testAll(type, username, password):
         print(genQueryWeak(username, password))
     else: 
         print(genQueryStrong(username, password))
-
+## End testAll
     
+#######
+#Main Code Execution
+#######
 
 # Test each case
 for x in range(0,3):
-    if x == 0: # Normal without mitigation
+    # Normal without mitigation
+    if x == 0:
         display = "NO"
-    elif x == 1: # Weak mitigation function applied
+    # Weak mitigation function applied
+    elif x == 1:
         display = "WEAK"
-    elif x == 2: # Strong mitigation applied
+    # Strong mitigation applied
+    elif x == 2:
         display = "STRONG"
 
+    # Display which query mitigation type is being tested
     print(f"\nTesting {display} MITIGATION")
     
     # Run through each test for the specified mitigation
@@ -128,5 +157,3 @@ for x in range(0,3):
     testUnion(x)
     testAddState(x)
     testComment(x)
-
-
