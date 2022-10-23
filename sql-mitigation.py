@@ -2,8 +2,7 @@ import re
 
 def genQuery(username, password):
     # accepts two input parameters and returns a SQL string.
-    SQL = f"SELECT authenticate FROM passwordList WHERE name='{username}' and passwd='{password}'"
-    return SQL
+    return f"SELECT authenticate FROM passwordList WHERE name='{username}' and passwd='{password}'"
 
 def genQueryWeak(username, password):
     # provide a weak mitigation against all four attacks
@@ -22,22 +21,7 @@ def genQueryWeak(username, password):
 
 def genQueryStrong(username, password):
     # provide a strong mitigation against all command injection attacks
-    #count = 0
-    #safeChars = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0','_']
-    #for char in username:
-    #   if char not in safeChars or char.isspace():
-    #      newUsername = username[:count] + username[count+1:]
-    #     username = newUsername
-    #       count -= 1
-    #  count += 1
-
-    #for char in password:
-    #    if char not in safeChars:
-    #        newPassword = password[:count] + password[count+1:]
-    #        password = newPassword
-    #        count -= 1
-    #    count += 1
-
+    # Only allow letters, numbers, and the "_" characters
     regex = re.compile('\w|_')
     
     rUsername = re.findall(regex, username)
@@ -56,7 +40,6 @@ def genQueryStrong(username, password):
     return genQuery(username, password)
 
 
-
 def testValid(type):
     # demonstrate the query generation function works as expected with a collection of test cases
     # that represent valid input where the username and the password consist of letters, numbers, and underscores
@@ -66,7 +49,6 @@ def testValid(type):
     print("\nTESTING VALID CASES")
 
     iterate = 0
-
     for username in testcaseusernames:
         testAll(type, username, testcasepasswords[iterate])
         iterate +=1
@@ -80,11 +62,9 @@ def testTautology(type):
     password = "Passowrd' OR '1' = '1"
     testAll(type, username, password)
 
-
     username = "dad_"
     password = "fake123' OR 'mom' = 'mom"
     testAll(type, username, password)
-
 
     username = "Billy"
     password = "'nothing' OR 'abc' = 'abc'"
@@ -120,7 +100,7 @@ def testComment(type):
     
     testAll(type, username, password)
 
-
+# Test the specific type of mitigation 
 def testAll(type, username, password):
     if type == 0:
         print(genQuery(username, password))
@@ -129,15 +109,24 @@ def testAll(type, username, password):
     else: 
         print(genQueryStrong(username, password))
 
-
     
 
 # Test each case
 for x in range(0,3):
+    if x == 0: # Normal without mitigation
+        display = "NO"
+    elif x == 1: # Weak mitigation function applied
+        display = "WEAK"
+    elif x == 2: # Strong mitigation applied
+        display = "STRONG"
+
+    print(f"\nTesting {display} MITIGATION")
+    
+    # Run through each test for the specified mitigation
     testValid(x)
     testTautology(x)
     testUnion(x)
     testAddState(x)
     testComment(x)
-    print()
+
 
