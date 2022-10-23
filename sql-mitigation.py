@@ -23,8 +23,8 @@ def genQueryWeak(username, password):
     username.replace(";","")
     password.replace(";","")
     # Tautology & Union mitigation
-    password.replace("'", "")
-    password.replace("'","")
+    username.replace("\'", "")
+    password.replace("\'", "")
 
     return genQuery(username, password)
 ## End genQueryWeak
@@ -73,15 +73,19 @@ def testTautology(type):
     print("\nTESTING TAUTOLOGY")
 
     username = "Bob"
-    password = "Passowrd' OR '1' = '1"
+    password = "Password' OR '1' = '1"
     testAll(type, username, password)
 
-    username = "dad_"
+    username = "bob_burt"
     password = "fake123' OR 'mom' = 'mom"
     testAll(type, username, password)
 
-    username = "Billy"
-    password = "'nothing' OR 'abc' = 'abc'"
+    username = "admin"
+    password = "nothing' OR 1=1"
+    testAll(type, username, password)
+
+    username = "root"
+    password = "root' OR 1=1"
     testAll(type, username, password)
 ## End testTautology
 
@@ -92,8 +96,19 @@ def testUnion(type):
     print("\nTESTING UNION")
 
     username = "George"
-    password = "'password' UNION SELECT authenticate FROM passwordList"
+    password = "password' UNION SELECT authenticate FROM passwordList;"
+    testAll(type, username, password)
 
+    username = "root"
+    password = "password' UNION SELECT authenticate FROM passwordList WHERE name=root;"
+    testAll(type, username, password)
+
+    username = "money"
+    password = "password' UNION SELECT creditcard FROM bank;"
+    testAll(type, username, password)
+
+    username = "passwords"
+    password = "password' UNION SELECT password FROM authentication;"
     testAll(type, username, password)
 ## End testUnion
 
@@ -104,8 +119,19 @@ def testAddState(type):
     print("\nTESTING ADDITIONAL STATEMENT")
 
     username = "Sam"
-    password = "'nothing'; INSERT INTO passwordList (name, passwd) VALUES 'Eve', '1111';"
-    
+    password = "nothing'; INSERT INTO passwordList (name, passwd) VALUES 'Eve', '1111';"
+    testAll(type, username, password)
+
+    username = "admin"
+    password = "'; INSERT INTO passwordList (name, passwd) VALUES 'admin', 'admin';"
+    testAll(type, username, password)
+
+    username = "hacktivist"
+    password = "'; DROP DATABASE voting;"
+    testAll(type, username, password)
+
+    username = "DOS"
+    password = "'; DROP DATABASE authentication;"
     testAll(type, username, password)
 ## End testAddState
 
@@ -115,9 +141,20 @@ def testAddState(type):
 def testComment(type):
     print("\nTESTING COMMENT")
 
-    username = "'Root'; --"
+    username = "root'; --"
     password = "nothing"
-    
+    testAll(type, username, password)
+
+    username = "admin'; --"
+    password = ""
+    testAll(type, username, password)
+
+    username = "administrator'; --"
+    password = ""
+    testAll(type, username, password)
+
+    username = "JBiden'; --"
+    password = ""
     testAll(type, username, password)
 ## End testComment
 
@@ -137,7 +174,7 @@ def testAll(type, username, password):
 #######
 
 # Test each case
-for x in range(0,3):
+for x in range(1,3):
     # Normal without mitigation
     if x == 0:
         display = "NO"
