@@ -17,14 +17,14 @@ def genQuery(username, password):
 def genQueryWeak(username, password):
 
     # Comment mitigtion
-    username.replace("-","")
-    password.replace("-","")
+    username = username.replace("-","")
+    password = password.replace("-","")
     # Additional statement
-    username.replace(";","")
-    password.replace(";","")
+    username = username.replace(";","")
+    password = password.replace(";","")
     # Tautology & Union mitigation
-    username.replace("\'", "")
-    password.replace("\'", "")
+    username = username.replace("\'", "")
+    password = password.replace("\'", "")
 
     return genQuery(username, password)
 ## End genQueryWeak
@@ -174,7 +174,7 @@ def testAll(type, username, password):
 #######
 
 # Test each case
-for x in range(1,3):
+for x in range(0,3):
     # Normal without mitigation
     if x == 0:
         display = "NO"
